@@ -15,7 +15,11 @@ module JsonCache
       caches[name.to_sym] || (raise "no cache #{name}")
     end
     def method_missing(sym,*args,&b)
-      get_cache(sym).send(:get,*args,&b)
+      if args.empty?
+        get_cache(sym)
+      else
+        get_cache(sym).send(:get,*args,&b)
+      end
     end
   end
 end

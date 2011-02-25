@@ -39,10 +39,10 @@ describe "JsonCache" do
         mc.get(2)
       end
       it 'should save a call result' do
-        JsonCache::CallResult.where('_query_params' => 2).count.should == 1
+        JsonCache::CallResult.where('_json_cache_internal.query_params' => 2).count.should == 1
       end
       it 'call result should have results' do
-        JsonCache::CallResult.where('_query_params' => 2).first.num.should == 4
+        JsonCache::CallResult.where('_json_cache_internal.query_params' => 2).first.num.should == 4
       end
       it 'should not need' do
         mc.should_not be_need(2)
@@ -157,6 +157,28 @@ describe "JsonCache" do
       lambda { m.nums(2).num_plus(3) }.should raise_error
       
       m.get_cache(:nums).all.count.should == 1
+    end
+    
+    describe 'processing' do
+      before do
+        mc.class_name = 'Item'
+        @process_list = []
+        mc.processor :real do |obj|
+          @process_list << obj
+        end
+        mc.get(2)
+      end
+      it 'has count' do
+        Item.count.should == 1
+      end
+      it 'processed counts' do
+        Item.unprocessed(:real).count.should == 1
+        Item.processed(:real).count.should == 0
+      end
+      it 'process smoke' do
+        mc.process!(:real)
+        @process_list.map { |x| x.num }.should == [4]
+      end
     end
   
   end

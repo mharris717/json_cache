@@ -10,3 +10,9 @@ Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 RSpec.configure do |config|
   config.mock_with :rr
 end
+
+Mongoid.configure do |config|
+  name = "json_cache_dev"
+  host = "mydesk"
+  config.master = Mongo::Connection.new(host).db(name)
+end

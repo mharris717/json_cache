@@ -1,6 +1,17 @@
 module JsonCache
+  module Processing
+    fattr(:processors) { {} }
+    def processor(n,&b)
+      self.processors[n.to_sym] = b
+    end
+    def process!(n)
+      b = self.processors[n.to_sym]
+      type_class.unprocessed(n).each { |x| b[x] }
+    end
+  end
   class MethodCache
     include FromHash
+    include Processing
     attr_accessor :name, :call_blk, :class_name, :class_blk
     def call_blk(&b)
       if block_given?
@@ -35,11 +46,11 @@ module JsonCache
       end
     end
     def get_existing(ops)
-      a = type_class.where('_query_params' => ops)
+      a = type_class.where('_json_cache_internal.query_params' => ops)
       f = a.first
       if !f
         nil
-      elsif f['_from_array']
+      elsif f['_json_cache_internal']['from_array']
         a.to_a
       else
         f
@@ -49,7 +60,8 @@ module JsonCache
       !get_existing(ops)
     end
     def create_from_raw(raw,ops,from_array)
-      cr_hash = raw.merge('_query_params' => ops, '_query_name' => name, '_from_array' => from_array)
+      h = {:query_params => ops, :name => name, :from_array => from_array}
+      cr_hash = raw.merge('_json_cache_internal' => h)
       type_class.create!(cr_hash)
     end
     def get_fresh(ops)
@@ -68,7 +80,9 @@ module JsonCache
       end
     end
     def all
-      JsonCache::CallResult.where('_query_name' => name)
+      JsonCache::CallResult.where('_json_cache_internal.name' => name)
     end
   end
+  
+  
 end
