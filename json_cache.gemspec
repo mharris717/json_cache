@@ -24,6 +24,8 @@ Gem::Specification.new do |s|
     "LICENSE.txt",
     "README.rdoc",
     "Rakefile",
+    "VERSION",
+    "json_cache.gemspec",
     "lib/json_cache.rb",
     "lib/json_cache/cache_manager.rb",
     "lib/json_cache/call_result.rb",
